@@ -15,6 +15,7 @@ set(TEST_SOURCE_LIST
         execute_tests.c
         input_tests.c
         shell_impl_tests.c
+        shell_tests.c
         util_tests.c
         )
 

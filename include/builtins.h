@@ -25,13 +25,14 @@
  * Change the working directory.
  * ~ is converted to the users home directory.
  * - no arguments is converted to the users home directory.
- * The command->exit_code is set to 0 on success or err->errno_code on failure.
+ * The command->exit_code is set to 0 on success or error->errno_code on failure.
  *
  * @param env the posix environment.
  * @param err the error object
  * @param command the command information
+ * @param errstream the stream to print error messages to
  */
 void builtin_cd(const struct dc_posix_env *env, struct dc_error *err,
-                struct command *command);
+                struct command *command, FILE *errstream);
 
 #endif // DC_SHELL_BUILTINS_H
