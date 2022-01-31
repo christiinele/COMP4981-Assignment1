@@ -21,6 +21,7 @@
 #include <regex.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <dc_posix/dc_posix_env.h>
 
 struct command;
 

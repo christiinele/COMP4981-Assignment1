@@ -37,17 +37,20 @@ Ensure(builtin, builtin_cd)
     dc_expand_path(&environ, &error, &path, "~");
     argv = dc_strs_to_array(&environ, &error, 3, NULL, path, NULL);
     test_builtin_cd("cd ~\n", "cd", 2, argv, path, NULL);
+    free(path);
 
     dc_expand_path(&environ, &error, &path, "~/");
     // remove the trailing space
     path[strlen(path) - 1] = '\0';
     argv = dc_strs_to_array(&environ, &error, 3, NULL, path, NULL);
     test_builtin_cd("cd ~\n", "cd", 2, argv, path, NULL);
+    free(path);
 
     chdir("/");
     dc_expand_path(&environ, &error, &path, "~");
     argv = dc_strs_to_array(&environ, &error, 2, NULL, NULL);
     test_builtin_cd("cd\n", "cd", 1, argv, path, NULL);
+    free(path);
 
     chdir("/tmp");
     argv = dc_strs_to_array(&environ, &error, 3, NULL, "/dev/null", NULL);
@@ -84,14 +87,17 @@ static void test_builtin_cd(const char *line, const char *cmd, size_t argc, char
         working_dir = dc_get_working_dir(&environ, &error);
         assert_that(working_dir, is_equal_to_string(expected_dir));
         assert_that(command.exit_code, is_equal_to(0));
+        free(working_dir);
     }
     else
     {
+        fflush(stderr_file);
         assert_that(message, is_equal_to_string(expected_message));
         assert_that(command.exit_code, is_equal_to(1));
     }
 
     fclose(stderr_file);
+    destroy_command(&environ, &command);
 }
 
 TestSuite *builtin_tests(void)

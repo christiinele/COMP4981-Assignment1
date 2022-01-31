@@ -51,6 +51,11 @@ struct command
 void parse_command(const struct dc_posix_env *env, struct dc_error *err,
                    struct state *state, struct command *command);
 
+/**
+ *
+ * @param env
+ * @param command
+ */
 void destroy_command(const struct dc_posix_env *env, struct command *command);
 
 #endif // DC_SHELL_COMMAND_H
