@@ -1,0 +1,26 @@
+# ninja log v5
+0	23	1643580573735057673	CMakeFiles/dc_shell_test.dir/main.o	504846621997045e
+1	35	1643580573747057464	CMakeFiles/dc_shell_test.dir/execute_tests.o	121e89fa7b3a1521
+1	39	1643580573751057394	CMakeFiles/dc_shell_test.dir/input_tests.o	1cb6cd92864ba08c
+1	39	1643580573751057394	CMakeFiles/dc_shell_test.dir/shell_tests.o	fbdf2fd67b144950
+1	40	1643580573755057325	CMakeFiles/dc_shell_test.dir/util_tests.o	d5c51edd49fe2c30
+0	42	1643580573755057325	CMakeFiles/dc_shell_test.dir/builtin_tests.o	cf8df8947c4d61c0
+1	47	1643580573759057256	CMakeFiles/dc_shell_test.dir/command_tests.o	aadfb09a8bf80a0d
+1	63	1643580573775056977	CMakeFiles/dc_shell_test.dir/shell_impl_tests.o	3182555643f595e6
+0	37	1643580831030843441	CMakeFiles/dc_shell_test.dir/util_tests.o	d5c51edd49fe2c30
+0	27	1643581125094476597	CMakeFiles/dc_shell_test.dir/input_tests.o	1cb6cd92864ba08c
+0	28	1643581125090476655	CMakeFiles/dc_shell_test.dir/main.o	504846621997045e
+0	30	1643581125098476541	CMakeFiles/dc_shell_test.dir/execute_tests.o	121e89fa7b3a1521
+1	37	1643581125106476425	CMakeFiles/dc_shell_test.dir/util_tests.o	d5c51edd49fe2c30
+1	37	1643581125106476425	CMakeFiles/dc_shell_test.dir/shell_tests.o	fbdf2fd67b144950
+0	40	1643581125110476369	CMakeFiles/dc_shell_test.dir/builtin_tests.o	cf8df8947c4d61c0
+0	50	1643581125118476254	CMakeFiles/dc_shell_test.dir/command_tests.o	aadfb09a8bf80a0d
+1	74	1643581125142475912	CMakeFiles/dc_shell_test.dir/shell_impl_tests.o	3182555643f595e6
+1	30	1643581434470079655	CMakeFiles/dc_shell_test.dir/main.o	504846621997045e
+1	31	1643581434470079655	CMakeFiles/dc_shell_test.dir/builtin_tests.o	cf8df8947c4d61c0
+1	35	1643581434474079913	CMakeFiles/dc_shell_test.dir/command_tests.o	aadfb09a8bf80a0d
+2	36	1643581434474079913	CMakeFiles/dc_shell_test.dir/shell_tests.o	fbdf2fd67b144950
+2	38	1643581434478080172	CMakeFiles/dc_shell_test.dir/util_tests.o	d5c51edd49fe2c30
+1	38	1643581434478080172	CMakeFiles/dc_shell_test.dir/input_tests.o	1cb6cd92864ba08c
+1	42	1643581434482080429	CMakeFiles/dc_shell_test.dir/execute_tests.o	121e89fa7b3a1521
+2	68	1643581434506081979	CMakeFiles/dc_shell_test.dir/shell_impl_tests.o	3182555643f595e6
