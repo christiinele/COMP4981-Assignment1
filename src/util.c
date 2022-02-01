@@ -1,3 +1,5 @@
+#include <dc_posix/dc_stdlib.h>
+#include <dc_posix/dc_string.h>
 #include "util.h"
 
 /**
@@ -7,8 +9,18 @@
  * @param err the error object
  * @return value of the PS1 environ var or "$ " if PS1 not set.
  */
-char *get_prompt(const struct dc_posix_env *env, struct dc_error *err) {
+char *get_prompt(const struct dc_posix_env *env, struct dc_error *err)
+{
+    char * env_var = dc_getenv(env, "PS1");
 
+    if (env_var == NULL) {
+        char *env_var_null_case = dc_strdup(env, err, "$ ");
+        return env_var_null_case;
+    }
+
+    char * env_var_dup = dc_strdup(env, err, env_var);
+
+    return env_var_dup;
 }
 
 /**
