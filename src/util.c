@@ -2,6 +2,10 @@
 #include <dc_posix/dc_string.h>
 #include "util.h"
 
+static size_t count(const char *str, int c);
+
+
+
 /**
  * Get the prompt to use.
  *
@@ -30,8 +34,16 @@ char *get_prompt(const struct dc_posix_env *env, struct dc_error *err)
  * @param err the error object
  * @return the PATH environ var
  */
-char *get_path(const struct dc_posix_env *env, struct dc_error *err) {
+char *get_path(const struct dc_posix_env *env, struct dc_error *err)
+{
+    char * env_var = dc_getenv(env, "PATH");
 
+    if (env_var == NULL) {
+        return NULL;
+    }
+
+    char * env_var_dup = dc_strdup(env, err, env_var);
+    return env_var_dup;
 }
 
 /**
@@ -46,7 +58,30 @@ char *get_path(const struct dc_posix_env *env, struct dc_error *err) {
  */
 char **parse_path(const struct dc_posix_env *env, struct dc_error *err,
                   const char *path_str) {
+    char *str = dc_strdup(env, err, path_str);
+    char *state;
+    char *token;
+    size_t num;
+    char **list;
+    size_t i;
 
+
+    state = str;
+    num = count(str, ':') + 1;
+    list = malloc((num + 1) * sizeof(char *));
+
+    i = 0;
+
+    while((token = dc_strtok_r(env,state, ":", &state)) != NULL)
+    {
+
+        list[i] = dc_strdup(env, err, token);
+        i++;
+    }
+
+    list[i] = NULL;
+    free(str);
+    return list;
 }
 
 /**
@@ -56,6 +91,43 @@ char **parse_path(const struct dc_posix_env *env, struct dc_error *err,
  * @param err the error object
  */
 void do_reset_state(const struct dc_posix_env *env, struct dc_error *err, struct state *state) {
+    if (state->prompt != NULL) {
+        dc_free(env, state->prompt, sizeof(state->prompt));
+        state->prompt = NULL;
+    }
+
+    if (state->current_line != NULL) {
+        dc_free(env, state->current_line, sizeof(state->current_line));
+        state->current_line = NULL;
+    }
+    if (state->command != NULL) {
+        dc_free(env, state->command, sizeof(state->command));
+        state->command = NULL;
+    }
+
+
+    state->max_line_length = 0;
+    state->current_line_length = 0;
+
+    state->fatal_error = NULL;
+
+    if (err->message != NULL) {
+        dc_free(env, err->message, sizeof(err->message));
+        err->message = NULL;
+    }
+
+    err->file_name = NULL;
+
+    err->function_name = NULL;
+
+    err->line_number = 0;
+
+    err->type = 0;
+
+    err->err_code = 0;
+
+
+
 
 }
 
@@ -67,7 +139,11 @@ void do_reset_state(const struct dc_posix_env *env, struct dc_error *err, struct
  * @param stream the stream to display the state on,
  */
 void display_state(const struct dc_posix_env *env, const struct state *state, FILE *stream){
+    char *str;
 
+    str = state_to_string(env, NULL, state);
+    fprintf(stream, "%s\n", str);
+    free(str);
 }
 
 /**
@@ -78,5 +154,42 @@ void display_state(const struct dc_posix_env *env, const struct state *state, FI
  * @param stream the stream to display the state on,
  */
 char *state_to_string(const struct dc_posix_env *env,  struct dc_error *err, const struct state *state){
+    size_t len;
+    char *line;
+
+    if(state->current_line == NULL) {
+        len = dc_strlen(env, "current_line = NULL");
+    }
+    else
+    {
+        len = dc_strlen(env, "current_line = \"\"");
+        len += state->current_line_length;
+    }
+
+    len += dc_strlen(env, ", fatal_error = ");
+
+    line = malloc(len + 1 + 1);
+    if (state->current_line == NULL) {
+        sprintf(line, "current_line = NULL, fatal_error = %d", state->fatal_error);
+    } else {
+        sprintf(line, "current_line = \"%s\", fatal_error = %d", state->current_line, state->fatal_error);
+    }
+
+    return line;
+}
+
+
+static size_t count(const char *str, int c){
+    size_t num;
+
+    num = 0;
+    for (const char *tmp = str; *tmp; tmp++)
+    {
+        if(*tmp == c){
+            num++;
+        }
+    }
+
+    return num;
 
 }
