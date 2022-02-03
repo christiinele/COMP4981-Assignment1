@@ -2,8 +2,12 @@
 #include <stdlib.h>
 #include <dc_posix/dc_stdlib.h>
 #include <dc_posix/dc_regex.h>
+#include <dc_util/filesystem.h>
+#include <dc_posix/dc_stdio.h>
+#include <dc_posix/dc_string.h>
 #include "shell_impl.h"
 #include "util.h"
+#include "input.h"
 
 /**
  * Set up the initial state:
@@ -135,7 +139,47 @@ int reset_state(const struct dc_posix_env *env, struct dc_error *err,
  */
 int read_commands(const struct dc_posix_env *env, struct dc_error *err,
                   void *arg) {
-    return 0;
+    struct state *state_arg;
+    size_t line_length = 255;
+    char *line;
+
+    state_arg = (struct state *) arg;
+
+
+    fprintf(state_arg->stdout, "[%s] %s", dc_get_working_dir(env, err), state_arg->prompt);
+
+    if (dc_error_has_error(err))
+    {
+        state_arg->fatal_error = true;
+
+        return ERROR;
+    }
+
+    line = read_command_line(env, err, state_arg->stdin, &line_length);
+    if (dc_error_has_error(err))
+    {
+        state_arg->fatal_error = true;
+        dc_free(env, line, sizeof(line));
+        return ERROR;
+    }
+
+    if (state_arg->current_line != NULL) {
+        dc_free(env, state_arg->current_line, sizeof(state_arg->current_line));
+        state_arg->current_line = NULL;
+    }
+
+    state_arg->current_line = dc_strdup(env, err, line);
+
+    if (dc_strlen(env, line) == 0) {
+        dc_free(env, line, sizeof(line));
+        return RESET_STATE;
+    }
+
+    state_arg->current_line_length = dc_strlen(env, line);
+    dc_free(env, line, sizeof(line));
+
+
+    return SEPARATE_COMMANDS;
 }
 
 /**
