@@ -14,7 +14,7 @@
  */
 char *read_command_line(const struct dc_posix_env *env, struct dc_error *err, FILE *stream, size_t *line_size) {
     char *line;
-    ssize_t read;
+    //ssize_t read;
 
     if (stream == NULL || line_size == 0) {
         return NULL;
@@ -25,11 +25,13 @@ char *read_command_line(const struct dc_posix_env *env, struct dc_error *err, FI
 //    printf("%s\n", line);
 //    }
 
+    line = dc_malloc(env, err, (sizeof( char*)));
     dc_getline(env, err, &line, line_size, stream);
-    printf("Message: %s\n", line);
+//    printf("Message: %s\n", line);
     dc_str_trim(env, line);
-    printf("Line size: %zu\n", strlen(line));
+//    printf("Line size: %zu\n", strlen(line));
     *line_size = strlen(line);
+    line[strlen(line)] = '\0';
     return line;
 
 }
