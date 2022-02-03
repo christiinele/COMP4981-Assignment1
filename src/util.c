@@ -91,6 +91,27 @@ char **parse_path(const struct dc_posix_env *env, struct dc_error *err,
  * @param err the error object
  */
 void do_reset_state(const struct dc_posix_env *env, struct dc_error *err, struct state *state) {
+    int pos;
+
+    state->stdin = stdin;
+    state->stdout = stdout;
+    state->stderr = stderr;
+
+    if (state->in_redirect_regex != NULL) {
+        dc_free(env, state->in_redirect_regex, sizeof(regex_t));
+        state->in_redirect_regex = NULL;
+    }
+
+    if (state->out_redirect_regex != NULL) {
+        dc_free(env, state->out_redirect_regex, sizeof(regex_t));
+        state->out_redirect_regex = NULL;
+    }
+
+    if (state->err_redirect_regex != NULL) {
+        dc_free(env, state->err_redirect_regex, sizeof(regex_t));
+        state->err_redirect_regex = NULL;
+    }
+
     if (state->prompt != NULL) {
         dc_free(env, state->prompt, sizeof(state->prompt));
         state->prompt = NULL;
@@ -108,25 +129,29 @@ void do_reset_state(const struct dc_posix_env *env, struct dc_error *err, struct
 
     state->max_line_length = 0;
     state->current_line_length = 0;
+    state->fatal_error = false;
 
-    state->fatal_error = NULL;
+    if (state->path != NULL) {
+        pos = 0;
+        while (state->path[pos] != NULL) {
+            dc_free(env, state->path[pos++], sizeof(char *));
+        }
+
+        dc_free(env, state->path, sizeof(char **));
+        state->path = NULL;
+    }
+
+
+    err->err_code = 0;
+    err->type = 0;
+    err->line_number = 0;
+    err->file_name = NULL;
+    err->function_name = NULL;
 
     if (err->message != NULL) {
         dc_free(env, err->message, sizeof(err->message));
         err->message = NULL;
     }
-
-    err->file_name = NULL;
-
-    err->function_name = NULL;
-
-    err->line_number = 0;
-
-    err->type = 0;
-
-    err->err_code = 0;
-
-
 
 
 }

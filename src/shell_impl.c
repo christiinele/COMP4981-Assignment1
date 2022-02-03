@@ -87,13 +87,17 @@ int destroy_state(const struct dc_posix_env *env, struct dc_error *err,
     state_arg->out_redirect_regex = NULL;
 
     pos = 0;
-
     while (state_arg->path[pos] != NULL) {
         dc_free(env, state_arg->path[pos++], sizeof(char *));
     }
 
     dc_free(env, state_arg->path, sizeof(char **));
     state_arg->path = NULL;
+
+    state_arg->stdin = stdin;
+    state_arg->stderr = stderr;
+    state_arg->stdout = stdout;
+
 
 
     return DC_FSM_EXIT;
