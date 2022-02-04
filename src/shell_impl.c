@@ -193,7 +193,76 @@ int read_commands(const struct dc_posix_env *env, struct dc_error *err,
  */
 int separate_commands(const struct dc_posix_env *env, struct dc_error *err,
                       void *arg) {
-    return 0;
+    struct state *state_arg;
+    struct command *state_command;
+    struct command *new_command;
+
+    int pos;
+
+    state_arg = (struct state *) arg;
+
+    state_command = state_arg->command;
+
+
+//    if (state_command->line != NULL) {
+//        dc_free(env, state_command->line, sizeof(state_command->line));
+//    }
+//
+//    if (state_command->command != NULL) {
+//        dc_free(env, state_command->command, sizeof(state_command->command));
+//    }
+//
+//    if (state_command->stdin_file != NULL) {
+//        dc_free(env, state_command->stdin_file, sizeof(state_command->stdin_file));
+//    }
+//
+//    if (state_command->stdout_file != NULL) {
+//        dc_free(env, state_command->stdout_file, sizeof(state_command->stdout_file));
+//    }
+//
+//    if (state_command->stderr_file != NULL) {
+//        dc_free(env, state_command->stderr_file, sizeof(state_command->stderr_file));
+//    }
+//
+//
+//    if (state_command->argv != NULL) {
+//        pos = 0;
+//        while (state_arg->path[pos] != NULL) {
+//            dc_free(env, state_arg->path[pos++], sizeof(char *));
+//        }
+//        dc_free(env, state_command->argv, sizeof(char*));
+//    }
+
+//    destroy_command(env, state_command);
+
+    dc_free(env, state_command, sizeof(struct command));
+
+    new_command = dc_malloc(env, err, sizeof(struct command));
+
+    if (dc_error_has_error(err))
+    {
+        state_arg->fatal_error = true;
+
+        return ERROR;
+    }
+
+    state_arg->command = new_command;
+
+    new_command->line = dc_strdup(env, err, state_arg->current_line);
+    new_command->command = NULL;
+    new_command->argc = 0;
+    new_command->argv = NULL;
+    new_command->stdin_file = NULL;
+    new_command->stdout_file = NULL;
+    new_command->stdout_overwrite = false;
+    new_command->stderr_file = NULL;
+    new_command->stderr_overwrite = false;
+    new_command->exit_code = 0;
+
+
+
+
+    return PARSE_COMMANDS;
 }
 
 /**
