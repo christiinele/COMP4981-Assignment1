@@ -5,9 +5,11 @@
 #include <dc_util/filesystem.h>
 #include <dc_posix/dc_stdio.h>
 #include <dc_posix/dc_string.h>
+#include <dc_util/strings.h>
 #include "shell_impl.h"
 #include "util.h"
 #include "input.h"
+#include "builtins.h"
 
 /**
  * Set up the initial state:
@@ -69,7 +71,7 @@ int destroy_state(const struct dc_posix_env *env, struct dc_error *err,
                   void *arg) {
 
     struct state *state_arg;
-    int pos;
+    size_t pos;
 
     state_arg = (struct state *) arg;
 
@@ -91,9 +93,15 @@ int destroy_state(const struct dc_posix_env *env, struct dc_error *err,
     state_arg->out_redirect_regex = NULL;
 
     pos = 0;
-    while (state_arg->path[pos] != NULL) {
-        dc_free(env, state_arg->path[pos++], sizeof(char *));
+    if (state_arg->path != NULL) {
+        while (state_arg->path[pos] != NULL) {
+            pos++;
+        }
     }
+
+
+    dc_strs_destroy_array(env, pos, state_arg->path);
+
 
     dc_free(env, state_arg->path, sizeof(char **));
     state_arg->path = NULL;
@@ -275,7 +283,19 @@ int separate_commands(const struct dc_posix_env *env, struct dc_error *err,
  */
 int parse_commands(const struct dc_posix_env *env, struct dc_error *err,
                    void *arg) {
-    return 0;
+    struct state *state_arg;
+
+    state_arg = (struct state *) arg;
+    parse_command(env, err, state_arg, state_arg->command);
+
+    if (dc_error_has_error(err))
+    {
+        state_arg->fatal_error = true;
+
+        return ERROR;
+    }
+
+    return EXECUTE_COMMANDS;
 }
 
 
@@ -290,7 +310,31 @@ int parse_commands(const struct dc_posix_env *env, struct dc_error *err,
  */
 int execute_commands(const struct dc_posix_env *env, struct dc_error *err,
                      void *arg) {
-    return 0;
+    struct state *state_arg;
+
+    state_arg = (struct state *) arg;
+
+
+    if (dc_strstr(env, state_arg->command->command, "cd") != NULL) {
+        builtin_cd(env, err, state_arg->command, state_arg->stderr);
+    } else if (dc_strstr(env, state_arg->command->command, "exit") != NULL) {
+        return EXIT;
+    } else {
+//        execute(env, err, state_arg->command, state_arg->path);
+//
+//        if (dc_error_has_error(err))
+//        {
+//            state_arg->fatal_error = true;
+//        }
+    }
+
+    fprintf(state_arg->stdout, "%d\n", state_arg->command->exit_code);
+
+    if (state_arg->fatal_error) {
+        return ERROR;
+    }
+
+    return RESET_STATE;
 }
 
 
@@ -303,7 +347,11 @@ int execute_commands(const struct dc_posix_env *env, struct dc_error *err,
  * @return DESTROY_STATE
  */
 int do_exit(const struct dc_posix_env *env, struct dc_error *err, void *arg) {
-    return 0;
+    struct state *state_arg;
+
+    state_arg = (struct state *) arg;
+    do_reset_state(env, err, state_arg);
+    return DESTROY_STATE;
 }
 
 /**

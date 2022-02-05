@@ -22,12 +22,14 @@
 void builtin_cd(const struct dc_posix_env *env, struct dc_error *err,
                 struct command *command, FILE *errstream) {
     char *path;
+    char *string;
+    char *message;
     int chdir_status;
 
-    if (command->argv[1]) {
-        path = dc_strdup(env, err, command->argv[1]);
-    } else {
+    if (command->argv[1] == NULL) {
         path = dc_strdup(env, err, "~/");
+    } else {
+        path = dc_strdup(env, err, command->argv[1]);
     }
 
     if (dc_strstr(env, path, "~") != NULL) {
@@ -36,41 +38,94 @@ void builtin_cd(const struct dc_posix_env *env, struct dc_error *err,
 
 
     chdir_status = dc_chdir(env, err, path);
+
     if (chdir_status == -1) {
 
-        char *message;
-        char *dir = dc_strdup(env, err, path);
-
-        switch (err->err_code) {
-        case EACCES: case ELOOP: case ENAMETOOLONG:
+        switch(err->err_code) {
+            case (EACCES): case (ELOOP): case (ENAMETOOLONG):
                 message = dc_strdup(env, err, err->message);
-                dir = dc_realloc(env, err, dir, strlen(dir) + strlen(message));
-                sprintf(dir, "%s: %s", dir, message);
-                dc_free(env, message, strlen(message));
-                fprintf(errstream, "%s\n", dir);
                 break;
-            case ENOENT:
-                dir = dc_realloc(env, err, dir, strlen(dir) + 16);
-                sprintf(dir, "%s: does not exist", dir);
-                fprintf(errstream, "%s\n", dir);
-
+            case (ENOENT):
+                message = dc_strdup(env, err, "does not exist");
                 break;
-            case ENOTDIR:
-                dir = dc_realloc(env, err, dir, strlen(dir) + 20);
-                sprintf(dir, "%s: is not a directory", dir);
-                fprintf(errstream, "%s\n", dir);
+            case (ENOTDIR):
+                message = dc_strdup(env, err, "is not a directory");
                 break;
         }
-
-        free(dir);
-
-
+        string = dc_malloc(env, err, strlen(path) + strlen(message) + 2);
+        sprintf(string, "%s: %s", path, message);
+        fprintf(errstream, "%s\n", string);
         command->exit_code = 1;
+
+        dc_free(env, string, strlen(string));
+        dc_free(env, message   , strlen(message));
     } else {
         command->exit_code = 0;
     }
 
-
-
     dc_free(env, path, strlen(path));
+
+
+//    char *path;
+//    int chdir_status;
+//
+//    if (command->argv[1] == NULL) {
+//        path = dc_strdup(env, err, "~/");
+//    } else {
+//        path = dc_strdup(env, err, command->argv[1]);
+//    }
+//
+//    if (dc_strstr(env, path, "~") != NULL) {
+//        dc_expand_path(env, err, &path, "~");
+//    }
+
+//    char *path;
+//    char *expandedPath;
+//    char *string;
+//
+//    if (command->argv[1] == NULL) {
+//        path = dc_strdup(env, err, "~/");
+//    } else {
+//        path = dc_strdup(env, err, command->argv[1]);
+//    }
+//
+//    dc_expand_path(env, err, &expandedPath, path);
+//
+//
+//    chdir_status = dc_chdir(env, err, expandedPath);
+//    if (chdir_status == -1) {
+//        char *message;
+//        char *dir = expandedPath;
+//
+//        switch (err->err_code) {
+//        case EACCES: case ELOOP: case ENAMETOOLONG:
+//                message = dc_strdup(env, err, err->message);
+//                string = dc_realloc(env, err, dir, strlen(dir) + strlen(message));
+//                sprintf(string, "%s: %s", dir, message);
+//                fprintf(errstream, "%s\n", string);
+//                break;
+//            case ENOENT:
+//                string = dc_realloc(env, err, dir, strlen(dir) + 16);
+//                sprintf(string, "%s: does not exist", dir);
+//                fprintf(errstream, "%s\n", string);
+//
+//                break;
+//            case ENOTDIR:
+//                string = dc_realloc(env, err, dir, strlen(dir) + 20);
+//                sprintf(string, "%s: is not a directory", dir);
+//                fprintf(errstream, "%s\n", string);
+//                break;
+//        }
+//
+//
+//
+//        command->exit_code = 1;
+//    } else {
+//        command->exit_code = 0;
+//    }
+    //dc_free(env, path, strlen(path));
+
+
+
+
 }
