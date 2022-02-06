@@ -83,7 +83,6 @@ char **parse_path(const struct dc_posix_env *env, struct dc_error *err,
     dc_free(env, str, strlen(str));
 
     //added free(state);
-    dc_free(env, state, strlen(state));
     return list;
 }
 
@@ -137,7 +136,8 @@ void do_reset_state(const struct dc_posix_env *env, struct dc_error *err, struct
     if (state->path != NULL) {
         pos = 0;
         while (state->path[pos] != NULL) {
-            dc_free(env, state->path[pos++], sizeof(char *));
+            dc_free(env, state->path[pos], strlen(state->path[pos]));
+            ++pos;
         }
 
         dc_free(env, state->path, sizeof(char **));
@@ -152,7 +152,7 @@ void do_reset_state(const struct dc_posix_env *env, struct dc_error *err, struct
     err->function_name = NULL;
 
     if (err->message != NULL) {
-        dc_free(env, err->message, sizeof(err->message));
+        dc_free(env, err->message, strlen(err->message));
         err->message = NULL;
     }
 
