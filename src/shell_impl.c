@@ -11,6 +11,8 @@
 #include "input.h"
 #include "builtins.h"
 
+char *remove_both_end_char(const struct dc_posix_env *env, struct dc_error *err, char* message);
+
 /**
  * Set up the initial state:
  *  - in_redirect_regex  "[ \t\f\v]<.*"
@@ -364,5 +366,38 @@ int do_exit(const struct dc_posix_env *env, struct dc_error *err, void *arg) {
  */
 int handle_error(const struct dc_posix_env *env, struct dc_error *err,
                  void *arg) {
-    return 0;
+    struct state *state_arg;
+
+    state_arg = (struct state *) arg;
+
+
+    if (state_arg->current_line == NULL) {
+        fprintf(state_arg->stderr, "internal error (%d) %s\n", err->err_code, err->message);
+
+    } else {
+
+        fprintf(state_arg->stderr, "internal error (%d) %s: \"%s\"\n", err->err_code, err->message, state_arg->current_line);
+
+    }
+
+//    dc_free(env, trimmed, strlen(trimmed));
+
+    if (state_arg->fatal_error) {
+        return DESTROY_STATE;
+    }
+
+
+    return RESET_STATE;
+}
+
+
+char *remove_both_end_char(const struct dc_posix_env *env, struct dc_error *err, char* message) {
+
+    char *trimmed;
+
+    trimmed = dc_strndup(env, err, message, strlen(message) - 1);
+    dc_memmove(env, trimmed, trimmed+1, strlen(trimmed));
+    return trimmed;
+
+
 }

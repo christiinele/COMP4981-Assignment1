@@ -165,24 +165,6 @@ char *trim_string_left_arrow(const struct dc_posix_env *env, struct dc_error *er
         dc_memmove(env, str, str+1, strlen(str));
     }
     str = dc_str_left_trim(env, str);
-//    while (counter < 1) {
-//
-//        if (*str == 62) {
-//            counter++;
-//        }
-//        dc_memmove(env, str, str+1, strlen(str));
-//    }
-//
-//    if (*str == 62) {
-//        dc_memmove(env, str, str+1, strlen(str));
-//    }
-//
-//    counter = 0;
-//    while (counter < 2) {
-//        if (*str == 60) {
-//            dc_memmove(env, str, str+1, strlen(str));
-//        }
-//    }
 
 
     return str;

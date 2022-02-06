@@ -54,6 +54,7 @@ void builtin_cd(const struct dc_posix_env *env, struct dc_error *err,
         }
         string = dc_malloc(env, err, strlen(path) + strlen(message) + 2);
         sprintf(string, "%s: %s", path, message);
+
         fprintf(errstream, "%s\n", string);
         command->exit_code = 1;
 
@@ -64,68 +65,5 @@ void builtin_cd(const struct dc_posix_env *env, struct dc_error *err,
     }
 
     dc_free(env, path, strlen(path));
-
-
-//    char *path;
-//    int chdir_status;
-//
-//    if (command->argv[1] == NULL) {
-//        path = dc_strdup(env, err, "~/");
-//    } else {
-//        path = dc_strdup(env, err, command->argv[1]);
-//    }
-//
-//    if (dc_strstr(env, path, "~") != NULL) {
-//        dc_expand_path(env, err, &path, "~");
-//    }
-
-//    char *path;
-//    char *expandedPath;
-//    char *string;
-//
-//    if (command->argv[1] == NULL) {
-//        path = dc_strdup(env, err, "~/");
-//    } else {
-//        path = dc_strdup(env, err, command->argv[1]);
-//    }
-//
-//    dc_expand_path(env, err, &expandedPath, path);
-//
-//
-//    chdir_status = dc_chdir(env, err, expandedPath);
-//    if (chdir_status == -1) {
-//        char *message;
-//        char *dir = expandedPath;
-//
-//        switch (err->err_code) {
-//        case EACCES: case ELOOP: case ENAMETOOLONG:
-//                message = dc_strdup(env, err, err->message);
-//                string = dc_realloc(env, err, dir, strlen(dir) + strlen(message));
-//                sprintf(string, "%s: %s", dir, message);
-//                fprintf(errstream, "%s\n", string);
-//                break;
-//            case ENOENT:
-//                string = dc_realloc(env, err, dir, strlen(dir) + 16);
-//                sprintf(string, "%s: does not exist", dir);
-//                fprintf(errstream, "%s\n", string);
-//
-//                break;
-//            case ENOTDIR:
-//                string = dc_realloc(env, err, dir, strlen(dir) + 20);
-//                sprintf(string, "%s: is not a directory", dir);
-//                fprintf(errstream, "%s\n", string);
-//                break;
-//        }
-//
-//
-//
-//        command->exit_code = 1;
-//    } else {
-//        command->exit_code = 0;
-//    }
-    //dc_free(env, path, strlen(path));
-
-
-
 
 }
