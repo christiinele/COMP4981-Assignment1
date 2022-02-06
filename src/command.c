@@ -7,7 +7,7 @@
 
 // 126 tests
 
-char *trim_string_left_arrow(const struct dc_posix_env *env, struct dc_error *err, char *str);
+char *trim_string_left_arrow(const struct dc_posix_env *env, char *str);
 
 /**
  * Parse the command. Take the command->line and use it to fill in all of the fields.
@@ -45,12 +45,11 @@ void parse_command(const struct dc_posix_env *env, struct dc_error *err,
             command->stderr_overwrite = true;
         }
 
-        str = trim_string_left_arrow(env, err, str);
+        str = trim_string_left_arrow(env, str);
 
         if (dc_strstr(env, str, "~") != NULL) {
             wordexp_t exp;
-            int status;
-            status = dc_wordexp(env, err, str, &exp, 0);
+            dc_wordexp(env, err, str, &exp, 0);
             printf("we_wordv[0] at err: %s\n", exp.we_wordv[0]);
             command->stderr_file = dc_strdup(env, err, exp.we_wordv[0]);
 
@@ -70,8 +69,8 @@ void parse_command(const struct dc_posix_env *env, struct dc_error *err,
         regoff_t length;
 
         length = match.rm_eo - match.rm_so;
-        str = malloc(length + 1);
-        dc_strncpy(env, str, &command_line[match.rm_so], length);
+        str = malloc((size_t) length + 1);
+        dc_strncpy(env, str, &command_line[match.rm_so], (size_t) length);
         command_line[match.rm_so] = '\0';
         str[length] = '\0';
 
@@ -79,13 +78,12 @@ void parse_command(const struct dc_posix_env *env, struct dc_error *err,
             command->stdout_overwrite = true;
         }
 
-        str = trim_string_left_arrow(env, err, str);
+        str = trim_string_left_arrow(env, str);
 
 
         if (dc_strstr(env, str, "~") != NULL) {
             wordexp_t exp;
-            int status;
-            status = dc_wordexp(env, err, str, &exp, 0);
+            dc_wordexp(env, err, str, &exp, 0);
             command->stdout_file = dc_strdup(env, err, exp.we_wordv[0]);
             wordfree(&exp);
         } else {
@@ -103,18 +101,17 @@ void parse_command(const struct dc_posix_env *env, struct dc_error *err,
         regoff_t length;
 
         length = match.rm_eo - match.rm_so;
-        str = malloc(length + 1);
-        dc_strncpy(env, str, &command_line[match.rm_so], length);
+        str = malloc((size_t) length + 1);
+        dc_strncpy(env, str, &command_line[match.rm_so], (size_t) length);
         str[length] = '\0';
         command_line[match.rm_so] = '\0';
 
-        str = trim_string_left_arrow(env, err, str);
+        str = trim_string_left_arrow(env, str);
         str = dc_str_left_trim(env, str);
 
         if (dc_strstr(env, str, "~") != NULL) {
             wordexp_t exp;
-            int status;
-            status = dc_wordexp(env, err, str, &exp, 0);
+            dc_wordexp(env, err, str, &exp, 0);
             command->stdin_file = dc_strdup(env, err, exp.we_wordv[0]);
             wordfree(&exp);
         } else {
@@ -125,8 +122,7 @@ void parse_command(const struct dc_posix_env *env, struct dc_error *err,
     }
 
     wordexp_t exp;
-    int status;
-    status = dc_wordexp(env, err, command_line, &exp, 0);
+    dc_wordexp(env, err, command_line, &exp, 0);
 
     command->argc = exp.we_wordc;
     command->argv = dc_malloc(env, err, sizeof(char *) * (exp.we_wordc + 2));
@@ -142,13 +138,12 @@ void parse_command(const struct dc_posix_env *env, struct dc_error *err,
     if (exp.we_wordv[0] != NULL) {
         command->command = dc_strdup(env, err, exp.we_wordv[0]);
     }
-    //command->command = dc_strdup(env, err, exp.we_wordv[0]);
 
     wordfree(&exp);
     dc_free(env, command_line, strlen(command_line) + 1);
 }
 
-char *trim_string_left_arrow(const struct dc_posix_env *env, struct dc_error *err, char *str ) {
+char *trim_string_left_arrow(const struct dc_posix_env *env, char *str) {
     str = dc_str_left_trim(env, str);
     int counter;
 
@@ -223,97 +218,3 @@ void destroy_command(const struct dc_posix_env *env, struct command *command) {
 
 }
 
-//
-//void parse_command(const struct dc_posix_env *env, struct dc_error *err,
-//                   struct state *state, struct command *command) {
-////    char *command_line = NULL;
-////
-////    redirect_err(env, err, state, command, command_line);
-////    redirect_out(env, err, state, command, command_line);
-////    redirect_in(env, err, state, command, command_line);
-////
-////    wordexp_t exp;
-////    int status;
-////    status = wordexp(command_line, &exp, 0);
-////
-////    command->argc = exp.we_wordc;
-////    command->argv = dc_malloc(env, err, sizeof(char *) * (exp.we_wordc + 2));
-////    for (int i = 1; i < (int) exp.we_wordc; ++i) {
-////        command->argv[i] = dc_strdup(env, err, exp.we_wordv[i]);
-////    }
-////    command->command = dc_strdup(env, err, exp.we_wordv[0]);
-////    free(command_line);
-////
-////    wordfree(&exp);
-////
-//
-//    regex_t *stderr_redirect_regex;
-//    char *command_line;
-//    regmatch_t match;
-//    int matched;
-//
-//    command_line = dc_strdup(env, err, command->line);
-//
-//    matched = dc_regexec(env, state->err_redirect_regex, command_line, 1, &match, 0);
-//    if (matched == 0) {
-//        if (dc_strstr(env, command_line, ">>") != NULL) {
-//            command->stderr_overwrite = true;
-//            wordexp_t exp;
-//            int status;
-//            status = wordexp("~", &exp, 0);
-////            if (command->stderr_file != NULL) {
-////                dc_free(env, command->stderr_file, sizeof(command->stderr_file));
-////            }
-//            command->stderr_file = dc_strdup(env, err, exp.we_wordv[0]);
-//            wordfree(&exp);
-//
-//        }
-//    }
-//
-//    matched = dc_regexec(env, state->out_redirect_regex, command_line, 1, &match, 0);
-//    if (matched == 0) {
-//        if (dc_strstr(env, command_line, ">>") != NULL) {
-//            command->stderr_overwrite = true;
-//            wordexp_t exp;
-//            int status;
-//            status = wordexp("~", &exp, 0);
-////            if (command->stderr_file != NULL) {
-////                dc_free(env, command->stderr_file, sizeof(command->stderr_file));
-////            }
-//            command->stdout_file = dc_strdup(env, err, exp.we_wordv[0]);
-//            wordfree(&exp);
-//
-//        }
-//    }
-//
-//    matched = dc_regexec(env, state->in_redirect_regex, command_line, 1, &match, 0);
-//    if (matched == 0) {
-////        if (dc_strstr(env, command_line, ">>") != NULL) {
-////            command->stderr_overwrite = true;
-////            wordexp_t exp;
-////            int status;
-////            status = wordexp("~", &exp, 0);
-////            command->stderr_file = dc_strdup(env, err, exp.we_wordv[0]);
-////        }
-//        wordexp_t exp;
-//        int status;
-//        status = wordexp("~", &exp, 0);
-//        command->stdin_file = dc_strdup(env, err, exp.we_wordv[0]);
-//        wordfree(&exp);
-//
-//    }
-//
-//    wordexp_t exp;
-//    int status;
-//    status = wordexp(command_line, &exp, 0);
-//
-//    command->argc = exp.we_wordc;
-//    command->argv = dc_malloc(env, err, sizeof(char *) * (exp.we_wordc + 2));
-//    for (int i = 1; i < (int) exp.we_wordc; ++i) {
-//        command->argv[i] = dc_strdup(env, err, exp.we_wordv[i]);
-//    }
-//    command->command = dc_strdup(env, err, exp.we_wordv[0]);
-//    free(command_line);
-//
-//    wordfree(&exp);
-//}

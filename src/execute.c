@@ -10,7 +10,7 @@
 void redirect(const struct dc_posix_env *env, struct dc_error *err, struct command *command);
 void run(const struct dc_posix_env *env, struct dc_error *err, struct command *command, char **path);
 int handle_run_error(struct dc_error *err);
-bool is_path_empty(const struct dc_posix_env *env, char **path);
+bool is_path_empty(char **path);
 
 /**
  * Create a child process, exec the command with any redirection, set the exit code.
@@ -25,7 +25,6 @@ bool is_path_empty(const struct dc_posix_env *env, char **path);
 void execute(const struct dc_posix_env *env, struct dc_error *err, struct command *command, char **path)
 {
     pid_t child;
-    pid_t wpid;
     int status;
 
     child = dc_fork(env, err);
@@ -41,7 +40,7 @@ void execute(const struct dc_posix_env *env, struct dc_error *err, struct comman
         status = handle_run_error(err);
         exit(status);
     } else {
-        wpid = waitpid(child, &status, WUNTRACED);
+        waitpid(child, &status, WUNTRACED);
         command->exit_code = WEXITSTATUS(status);
     }
 
@@ -89,15 +88,11 @@ int handle_run_error(struct dc_error *err) {
 
 
 
-bool is_path_empty(const struct dc_posix_env *env, char **path) {
+bool is_path_empty(char **path) {
     bool to_return;
-    if (path == NULL) {to_return = true;
-    } else if (path[0] == NULL) {
+    if (path == NULL || path[0] == NULL) {
         to_return = true;
-    }
-    else if (dc_strlen(env, path[0]) <= 2){
-        to_return = true;
-    }     else {
+    } else {
         to_return = false;
     }
     return to_return;
@@ -116,7 +111,7 @@ void run(const struct dc_posix_env *env, struct dc_error *err, struct command *c
         command->argv[0] = command->command;
         dc_execv(env, err, command->command, &command->argv[0]);
     } else {
-        if (is_path_empty(env, path)) {
+        if (is_path_empty(path)) {
             err->err_code = ENOENT;
         } else {
             for (size_t i = 0; path[i]; i++) {

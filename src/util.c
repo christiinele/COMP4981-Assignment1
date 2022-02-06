@@ -118,11 +118,11 @@ void do_reset_state(const struct dc_posix_env *env, struct dc_error *err, struct
     }
 
     if (state->current_line != NULL) {
-        dc_free(env, state->current_line, sizeof(state->current_line));
+        dc_free(env, state->current_line, strlen(state->current_line));
         state->current_line = NULL;
     }
     if (state->command != NULL) {
-        dc_free(env, state->command, sizeof(state->command));
+        dc_free(env, state->command, sizeof(&state->command));
         state->command = NULL;
     }
 

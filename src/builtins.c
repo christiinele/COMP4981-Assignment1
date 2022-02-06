@@ -1,10 +1,9 @@
 #include <dc_posix/dc_string.h>
-#include <wordexp.h>
-#include <dc_posix/dc_wordexp.h>
 #include <dc_posix/dc_unistd.h>
 #include <dc_posix/dc_stdlib.h>
 #include <dc_posix/dc_stdio.h>
 #include <dc_util/path.h>
+#include <wordexp.h>
 #include "builtins.h"
 
 

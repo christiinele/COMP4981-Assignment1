@@ -1,5 +1,4 @@
 #include <unistd.h>
-#include <stdlib.h>
 #include <dc_posix/dc_stdlib.h>
 #include <dc_posix/dc_regex.h>
 #include <dc_util/filesystem.h>
@@ -10,8 +9,6 @@
 #include "util.h"
 #include "input.h"
 #include "builtins.h"
-
-char *remove_both_end_char(const struct dc_posix_env *env, struct dc_error *err, char* message);
 
 /**
  * Set up the initial state:
@@ -207,43 +204,11 @@ int separate_commands(const struct dc_posix_env *env, struct dc_error *err,
     struct command *state_command;
     struct command *new_command;
 
-    int pos;
 
     state_arg = (struct state *) arg;
 
     state_command = state_arg->command;
 
-
-//    if (state_command->line != NULL) {
-//        dc_free(env, state_command->line, sizeof(state_command->line));
-//    }
-//
-//    if (state_command->command != NULL) {
-//        dc_free(env, state_command->command, sizeof(state_command->command));
-//    }
-//
-//    if (state_command->stdin_file != NULL) {
-//        dc_free(env, state_command->stdin_file, sizeof(state_command->stdin_file));
-//    }
-//
-//    if (state_command->stdout_file != NULL) {
-//        dc_free(env, state_command->stdout_file, sizeof(state_command->stdout_file));
-//    }
-//
-//    if (state_command->stderr_file != NULL) {
-//        dc_free(env, state_command->stderr_file, sizeof(state_command->stderr_file));
-//    }
-//
-//
-//    if (state_command->argv != NULL) {
-//        pos = 0;
-//        while (state_arg->path[pos] != NULL) {
-//            dc_free(env, state_arg->path[pos++], sizeof(char *));
-//        }
-//        dc_free(env, state_command->argv, sizeof(char*));
-//    }
-
-//    destroy_command(env, state_command);
 
     dc_free(env, state_command, sizeof(struct command));
 
@@ -380,7 +345,6 @@ int handle_error(const struct dc_posix_env *env, struct dc_error *err,
 
     }
 
-//    dc_free(env, trimmed, strlen(trimmed));
 
     if (state_arg->fatal_error) {
         return DESTROY_STATE;
@@ -391,13 +355,3 @@ int handle_error(const struct dc_posix_env *env, struct dc_error *err,
 }
 
 
-char *remove_both_end_char(const struct dc_posix_env *env, struct dc_error *err, char* message) {
-
-    char *trimmed;
-
-    trimmed = dc_strndup(env, err, message, strlen(message) - 1);
-    dc_memmove(env, trimmed, trimmed+1, strlen(trimmed));
-    return trimmed;
-
-
-}
