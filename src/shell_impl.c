@@ -36,17 +36,44 @@ int init_state(const struct dc_posix_env *env, struct dc_error *err, void *arg){
     state_arg->max_line_length = (size_t) sysconf(_SC_ARG_MAX);
 
     state_arg->in_redirect_regex = dc_malloc(env, err, sizeof (regex_t));
+    if (dc_error_has_error(err)) {
+        state_arg->fatal_error = true;
+    }
     state_arg->out_redirect_regex = dc_malloc(env, err, sizeof (regex_t));
+    if (dc_error_has_error(err)) {
+        state_arg->fatal_error = true;
+    }
     state_arg->err_redirect_regex = dc_malloc(env, err, sizeof (regex_t));
+    if (dc_error_has_error(err)) {
+        state_arg->fatal_error = true;
+    }
     dc_regcomp(env, err, state_arg->in_redirect_regex, "[ \\t\\f\\v]<.*", REG_EXTENDED);
+    if (dc_error_has_error(err)) {
+        state_arg->fatal_error = true;
+    }
     dc_regcomp(env, err, state_arg->out_redirect_regex, "[ \\t\\f\\v][1^2]?>[>]?.*", REG_EXTENDED);
+    if (dc_error_has_error(err)) {
+        state_arg->fatal_error = true;
+    }
     dc_regcomp(env, err, state_arg->err_redirect_regex, "[ \\t\\f\\v]2>[>]?.*", REG_EXTENDED);
+    if (dc_error_has_error(err)) {
+        state_arg->fatal_error = true;
+    }
 
     path = get_path(env, err);
+    if (dc_error_has_error(err)) {
+        state_arg->fatal_error = true;
+    }
     path_array = parse_path(env, err, path);
+    if (dc_error_has_error(err)) {
+        state_arg->fatal_error = true;
+    }
     state_arg->path = path_array;
 
     ps1_env_var = get_prompt(env, err);
+    if (dc_error_has_error(err)) {
+        state_arg->fatal_error = true;
+    }
     state_arg->prompt = ps1_env_var;
 
     state_arg->current_line_length = 0;
@@ -96,36 +123,6 @@ int destroy_state(const struct dc_posix_env *env, struct dc_error *err,
     dc_free(env, state_arg->err_redirect_regex, sizeof(regex_t));
     dc_free(env, state_arg->in_redirect_regex, sizeof(regex_t));
     dc_free(env, state_arg->out_redirect_regex, sizeof(regex_t));
-
-    if (state_arg->command != NULL) {
-        if (state_arg->command->line != NULL) {
-            dc_free(env, state_arg->command->line, strlen(state_arg->command->line));
-        }
-        if (state_arg->command->command != NULL) {
-            dc_free(env, state_arg->command->command, strlen(state_arg->command->command));
-        }
-
-        pos = 0;
-        if (state_arg->command->argv != NULL) {
-            while (state_arg->command->argv[pos] != NULL) {
-                pos++;
-            }
-            dc_strs_destroy_array(env, pos, state_arg->path);
-            dc_free(env, state_arg->path, sizeof(char **));
-        }
-        if (state_arg->command->stdin_file != NULL) {
-            dc_free(env, state_arg->command->stdin_file, strlen(state_arg->command->stdin_file));
-        }
-
-        if (state_arg->command->stdout_file != NULL) {
-            dc_free(env, state_arg->command->stdout_file, strlen(state_arg->command->stdout_file));
-        }
-
-        if (state_arg->command->stderr_file != NULL) {
-            dc_free(env, state_arg->command->stderr_file, strlen(state_arg->command->stderr_file));
-        }
-
-    }
 
 
 
@@ -183,19 +180,28 @@ int read_commands(const struct dc_posix_env *env, struct dc_error *err,
                   void *arg) {
     char *cwd;
     struct state *state_arg;
-    size_t line_length = 255;
+    size_t line_length;
     char *line;
     char *prompt;
+    size_t *line_length_pointer;
 
     state_arg = (struct state *) arg;
+
+    line_length_pointer = &line_length;
 
 //    char* working_dir = dc_get_working_dir(env, err);
 //
 //    fprintf(state_arg->stdout, "[%s] %s", working_dir, state_arg->prompt);
 //    dc_free(env, working_dir, strlen(working_dir));
     cwd = dc_get_working_dir(env, err);
+    if (dc_error_has_error(err)) {
+        state_arg->fatal_error = true;
+    }
     // [current working directory] state.prompt
-    prompt = malloc(1 + strlen(cwd) + 1 + 2 + strlen(state_arg->prompt) + 1);
+    prompt = dc_malloc(env, err, 1 + strlen(cwd) + 1 + 2 + strlen(state_arg->prompt) + 1);
+    if (dc_error_has_error(err)) {
+        state_arg->fatal_error = true;
+    }
     sprintf(prompt, "[%s] %s", cwd, state_arg->prompt);
 
     fprintf(state_arg->stdout, "%s", prompt);
@@ -211,28 +217,28 @@ int read_commands(const struct dc_posix_env *env, struct dc_error *err,
         return ERROR;
     }
 
-    line = read_command_line(env, err, state_arg->stdin, &line_length);
+    line = read_command_line(env, err, state_arg->stdin, line_length_pointer);
     if (dc_error_has_error(err))
     {
         state_arg->fatal_error = true;
-        dc_free(env, line, sizeof(line));
+//        dc_free(env, line, sizeof(line));
         return ERROR;
     }
 
     if (state_arg->current_line != NULL) {
-        dc_free(env, state_arg->current_line, sizeof(state_arg->current_line));
+//        dc_free(env, state_arg->current_line, sizeof(state_arg->current_line));
         state_arg->current_line = NULL;
     }
 
     state_arg->current_line = dc_strdup(env, err, line);
 
     if (dc_strlen(env, line) == 0) {
-        dc_free(env, line, strlen(line));
+//        dc_free(env, line, strlen(line));
         return RESET_STATE;
     }
 
     state_arg->current_line_length = dc_strlen(env, line);
-    dc_free(env, line, strlen(line));
+//    dc_free(env, line, strlen(line));
 
 
     return SEPARATE_COMMANDS;
@@ -272,8 +278,8 @@ int separate_commands(const struct dc_posix_env *env, struct dc_error *err,
 
     state_arg->command = new_command;
 
-//    new_command->line = dc_strdup(env, err, state_arg->current_line);
-    new_command->line = state_arg->current_line;
+    new_command->line = dc_strdup(env, err, state_arg->current_line);
+//    new_command->line = state_arg->current_line;
 
 //    new_command->command = NULL;
 

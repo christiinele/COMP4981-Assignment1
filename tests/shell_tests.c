@@ -57,7 +57,7 @@ static void test_run_shell(const char *in, const char *expected_out, const char 
     in_file = fmemopen(in_buf, strlen(in_buf) + 1, "r");
     out_file = fmemopen(out_buf, sizeof(out_buf), "w");
     err_file = fmemopen(err_buf, sizeof(err_buf), "w");
-    ret_val = run_shell(&environ, &error, in_file, out_file, err_file);
+    ret_val = run_shell(&environ, &error, in_file, out_file, err_file); //here
     assert_that(ret_val, is_equal_to(0));
     fflush(out_file);
     assert_that(out_buf, is_equal_to_string(expected_out));

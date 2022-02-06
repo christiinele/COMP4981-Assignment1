@@ -108,6 +108,7 @@ void run(const struct dc_posix_env *env, struct dc_error *err, struct command *c
          */
         command->argv[0] = command->command;
         dc_execv(env, err, command->argv[0], command->argv);
+
     } else {
         if (*path == NULL) {
             err->err_code = ENOENT;
@@ -117,8 +118,9 @@ void run(const struct dc_posix_env *env, struct dc_error *err, struct command *c
                 size_t length;
 
                 length = strlen(path[i]) + 1 + strlen(command->command);
-                cmd = malloc(length);
+                cmd = dc_malloc(env, err, length + 1);
                 sprintf(cmd, "%s/%s", path[i], command->command);
+                cmd[length] = '\0';
 
                 if (command->argv[0] != NULL) {
                     dc_free(env, command->argv[0], strlen(command->argv[0]));
@@ -126,7 +128,7 @@ void run(const struct dc_posix_env *env, struct dc_error *err, struct command *c
                 command->argv[0] = cmd;
                 execv_val = dc_execv(env, err, command->argv[0], command->argv);
 
-                if(execv_val != ENOENT) {
+                if(execv_val == ENOENT) {
                     break;
                 }
             }
@@ -153,10 +155,10 @@ void redirect(const struct dc_posix_env *env, struct dc_error *err, struct comma
 
     if (command->stdout_file != NULL) {
         if (command->stdout_overwrite) {
-            fd = open(command->stdout_file, O_WRONLY | O_CREAT| O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+            fd = open(command->stdout_file, O_WRONLY | O_CREAT| O_APPEND, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
         } else {
-            fd = open(command->stdout_file, O_WRONLY | O_CREAT| O_APPEND, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+            fd = open(command->stdout_file, O_WRONLY | O_CREAT| O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
         }
 
         if (dc_error_has_error(err))
@@ -170,10 +172,10 @@ void redirect(const struct dc_posix_env *env, struct dc_error *err, struct comma
 
     if (command->stderr_file != NULL) {
         if (command->stderr_overwrite) {
-            fd = open(command->stderr_file, O_WRONLY | O_CREAT| O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+            fd = open(command->stderr_file, O_WRONLY | O_CREAT| O_APPEND, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
         } else {
-            fd = open(command->stderr_file, O_WRONLY | O_CREAT| O_APPEND, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+            fd = open(command->stderr_file, O_WRONLY | O_CREAT| O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
         }
         if (dc_error_has_error(err))
         {

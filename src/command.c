@@ -29,6 +29,9 @@ void parse_command(const struct dc_posix_env *env, struct dc_error *err,
 
     err_regex = state->err_redirect_regex;
     command_line = dc_strdup(env, err, command->line);
+    if (dc_error_has_error(err)) {
+        state->fatal_error = true;
+    }
     matched = dc_regexec(env, err_regex, command_line, 1, &match, 0);
     if (matched == 0)
     {
@@ -37,6 +40,9 @@ void parse_command(const struct dc_posix_env *env, struct dc_error *err,
 
         length = match.rm_eo - match.rm_so;
         str = dc_malloc(env , err, (size_t) length + 1);
+        if (dc_error_has_error(err)) {
+            state->fatal_error = true;
+        }
         dc_strncpy(env, str, &command_line[match.rm_so], (size_t) length);
         str[length] = '\0';
         command_line[match.rm_so] = '\0';
@@ -50,11 +56,20 @@ void parse_command(const struct dc_posix_env *env, struct dc_error *err,
         if (dc_strstr(env, str, "~") != NULL) {
             wordexp_t exp;
             dc_wordexp(env, err, str, &exp, 0);
+            if (dc_error_has_error(err)) {
+                state->fatal_error = true;
+            }
             command->stderr_file = dc_strdup(env, err, exp.we_wordv[0]);
+            if (dc_error_has_error(err)) {
+                state->fatal_error = true;
+            }
 
             wordfree(&exp);
         } else {
             command->stderr_file = dc_strdup(env, err, str);
+            if (dc_error_has_error(err)) {
+                state->fatal_error = true;
+            }
         }
 
         dc_free(env, str, sizeof(str));
@@ -68,7 +83,10 @@ void parse_command(const struct dc_posix_env *env, struct dc_error *err,
         regoff_t length;
 
         length = match.rm_eo - match.rm_so;
-        str = malloc((size_t) length + 1);
+        str = dc_malloc(env, err, (size_t) length + 1);
+        if (dc_error_has_error(err)) {
+            state->fatal_error = true;
+        }
         dc_strncpy(env, str, &command_line[match.rm_so], (size_t) length);
         command_line[match.rm_so] = '\0';
         str[length] = '\0';
@@ -83,10 +101,19 @@ void parse_command(const struct dc_posix_env *env, struct dc_error *err,
         if (dc_strstr(env, str, "~") != NULL) {
             wordexp_t exp;
             dc_wordexp(env, err, str, &exp, 0);
+            if (dc_error_has_error(err)) {
+                state->fatal_error = true;
+            }
             command->stdout_file = dc_strdup(env, err, exp.we_wordv[0]);
+            if (dc_error_has_error(err)) {
+                state->fatal_error = true;
+            }
             wordfree(&exp);
         } else {
             command->stdout_file = dc_strdup(env, err, str);
+            if (dc_error_has_error(err)) {
+                state->fatal_error = true;
+            }
         }
 
         dc_free(env, str, sizeof(str));
@@ -111,6 +138,9 @@ void parse_command(const struct dc_posix_env *env, struct dc_error *err,
         if (dc_strstr(env, str, "~") != NULL) {
             wordexp_t exp;
             dc_wordexp(env, err, str, &exp, 0);
+            if (dc_error_has_error(err)) {
+                state->fatal_error = true;
+            }
             command->stdin_file = dc_strdup(env, err, exp.we_wordv[0]);
             wordfree(&exp);
         } else {
@@ -122,13 +152,22 @@ void parse_command(const struct dc_posix_env *env, struct dc_error *err,
 
     wordexp_t exp;
     dc_wordexp(env, err, command_line, &exp, 0);
+    if (dc_error_has_error(err)) {
+        state->fatal_error = true;
+    }
 
     command->argc = exp.we_wordc;
     command->argv = dc_malloc(env, err, sizeof(char *) * (exp.we_wordc + 2));
+    if (dc_error_has_error(err)) {
+        state->fatal_error = true;
+    }
     command->argv[0] = NULL;
     if (command->argc > 1) {
         for (int i = 1; i < (int) exp.we_wordc; ++i) {
             command->argv[i] = dc_strdup(env, err, exp.we_wordv[i]);
+            if (dc_error_has_error(err)) {
+                state->fatal_error = true;
+            }
         }
 
     }
@@ -136,6 +175,9 @@ void parse_command(const struct dc_posix_env *env, struct dc_error *err,
 
     if (exp.we_wordv[0] != NULL) {
         command->command = dc_strdup(env, err, exp.we_wordv[0]);
+        if (dc_error_has_error(err)) {
+            state->fatal_error = true;
+        }
     }
 
     wordfree(&exp);
@@ -149,15 +191,21 @@ char *trim_string_left_arrow(const struct dc_posix_env *env, char *str) {
     counter = 0;
 
     while (counter < 1) {
-        if (*str == 62 || *str == 60) {
+        if (str[0] == '>' || str[0] == '<') {
             counter++;
         }
+//        if (dc_strcmp(env, &str[0], "<") == 0 || dc_strcmp(env, &str[0], ">") == 0) {
+//            counter++;
+//        }
         dc_memmove(env, str, str+1, strlen(str));
     }
 
-    if (*str == 62 || *str == 60) {
+    if (str[0] == '>' || str[0] == '<') {
         dc_memmove(env, str, str+1, strlen(str));
     }
+//    if (dc_strcmp(env, &str[0], "<") == 0 || dc_strcmp(env, &str[0], ">") == 0) {
+//        dc_memmove(env, str, str+1, strlen(str));
+//    }
     str = dc_str_left_trim(env, str);
 
 

@@ -24,6 +24,8 @@ void builtin_cd(const struct dc_posix_env *env, struct dc_error *err,
     char *string;
     char *message;
     int chdir_status;
+    size_t total_length_message;
+
 
     if (command->argv[1] == NULL) {
         path = dc_strdup(env, err, "~/");
@@ -38,7 +40,7 @@ void builtin_cd(const struct dc_posix_env *env, struct dc_error *err,
 
     chdir_status = dc_chdir(env, err, path);
 
-    if (chdir_status == -1) {
+    if (dc_error_has_error(err)) {
 
         switch(err->err_code) {
             case (EACCES): case (ELOOP): case (ENAMETOOLONG):
@@ -51,8 +53,10 @@ void builtin_cd(const struct dc_posix_env *env, struct dc_error *err,
                 message = dc_strdup(env, err, "is not a directory");
                 break;
         }
-        string = dc_malloc(env, err, strlen(path) + strlen(message) + 2);
+        total_length_message = strlen(path) + strlen(message) + 2;
+        string = dc_malloc(env, err, total_length_message + 1);
         sprintf(string, "%s: %s", path, message);
+//        string[total_length_message] = '\0';
 
         fprintf(errstream, "%s\n", string);
         command->exit_code = 1;
