@@ -4,7 +4,6 @@
 #include "shell_impl.h"
 #include <stdlib.h>
 
-
 /**
  * Run the shell FSM.
  *
@@ -42,10 +41,10 @@ int run_shell(const struct dc_posix_env *env, struct dc_error *error, FILE *in, 
     struct dc_fsm_info *fsm_info;
     struct state shell_state;
 
+
     ret_val = EXIT_SUCCESS;
 
     fsm_info = dc_fsm_info_create(env, error, "shell");
-
 
     shell_state.stderr = err;
     shell_state.stdin = in;

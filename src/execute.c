@@ -28,6 +28,9 @@ void execute(const struct dc_posix_env *env, struct dc_error *err, struct comman
     int status;
 
     child = dc_fork(env, err);
+    if (child == -1) {
+        perror("NO\n");
+    }
     if (child == 0) {
         redirect(env, err, command);
 
@@ -86,20 +89,15 @@ int handle_run_error(struct dc_error *err) {
     return to_return;
 }
 
-
-
 bool is_path_empty(char **path) {
     bool to_return;
     if (path == NULL || path[0] == NULL) {
         to_return = true;
-    } else {
+    }  else {
         to_return = false;
     }
     return to_return;
-
-
 }
-
 
 void run(const struct dc_posix_env *env, struct dc_error *err, struct command *command, char **path) {
     char *cmd;
@@ -109,24 +107,28 @@ void run(const struct dc_posix_env *env, struct dc_error *err, struct command *c
          * perhaps stdup?
          */
         command->argv[0] = command->command;
-        dc_execv(env, err, command->command, &command->argv[0]);
+        dc_execv(env, err, command->argv[0], command->argv);
     } else {
-        if (is_path_empty(path)) {
+        if (*path == NULL) {
             err->err_code = ENOENT;
         } else {
             for (size_t i = 0; path[i]; i++) {
                 int execv_val;
-                cmd = malloc(strlen(path[i]) + strlen(command->command) + 1);
+                size_t length;
+
+                length = strlen(path[i]) + 1 + strlen(command->command);
+                cmd = malloc(length);
                 sprintf(cmd, "%s/%s", path[i], command->command);
 
-                command->argv[0] = dc_strdup(env, err, cmd);
-                execv_val = dc_execv(env, err, cmd, &command->argv[0]);
+                if (command->argv[0] != NULL) {
+                    dc_free(env, command->argv[0], strlen(command->argv[0]));
+                }
+                command->argv[0] = cmd;
+                execv_val = dc_execv(env, err, command->argv[0], command->argv);
 
                 if(execv_val != ENOENT) {
-                    dc_free(env, cmd, strlen(cmd));
                     break;
                 }
-                dc_free(env, cmd, strlen(cmd));
             }
 
         }
@@ -151,7 +153,7 @@ void redirect(const struct dc_posix_env *env, struct dc_error *err, struct comma
 
     if (command->stdout_file != NULL) {
         if (command->stdout_overwrite) {
-            fd = open(command->stdout_file, O_WRONLY | O_CREAT|O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+            fd = open(command->stdout_file, O_WRONLY | O_CREAT| O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
         } else {
             fd = open(command->stdout_file, O_WRONLY | O_CREAT| O_APPEND, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
@@ -168,10 +170,10 @@ void redirect(const struct dc_posix_env *env, struct dc_error *err, struct comma
 
     if (command->stderr_file != NULL) {
         if (command->stderr_overwrite) {
-            fd = open(command->stderr_file, O_WRONLY | O_CREAT|O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+            fd = open(command->stderr_file, O_WRONLY | O_CREAT| O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
         } else {
-            fd = open(command->stderr_file, O_WRONLY | O_CREAT|O_APPEND, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+            fd = open(command->stderr_file, O_WRONLY | O_CREAT| O_APPEND, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
         }
         if (dc_error_has_error(err))
         {

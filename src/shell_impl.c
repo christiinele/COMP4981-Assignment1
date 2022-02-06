@@ -146,14 +146,28 @@ int reset_state(const struct dc_posix_env *env, struct dc_error *err,
  */
 int read_commands(const struct dc_posix_env *env, struct dc_error *err,
                   void *arg) {
+    char *cwd;
     struct state *state_arg;
     size_t line_length = 255;
     char *line;
+    char *prompt;
 
     state_arg = (struct state *) arg;
 
+//    char* working_dir = dc_get_working_dir(env, err);
+//
+//    fprintf(state_arg->stdout, "[%s] %s", working_dir, state_arg->prompt);
+//    dc_free(env, working_dir, strlen(working_dir));
+    cwd = dc_get_working_dir(env, err);
+    // [current working directory] state.prompt
+    prompt = malloc(1 + strlen(cwd) + 1 + 2 + strlen(state_arg->prompt) + 1);
+    sprintf(prompt, "[%s] %s", cwd, state_arg->prompt);
 
-    fprintf(state_arg->stdout, "[%s] %s", dc_get_working_dir(env, err), state_arg->prompt);
+    fprintf(state_arg->stdout, "%s", prompt);
+    dc_free(env, prompt, strlen(prompt));
+    dc_free(env, cwd, strlen(cwd));
+
+    fflush(state_arg->stdout);
 
     if (dc_error_has_error(err))
     {
@@ -224,6 +238,8 @@ int separate_commands(const struct dc_posix_env *env, struct dc_error *err,
     state_arg->command = new_command;
 
     new_command->line = dc_strdup(env, err, state_arg->current_line);
+//    new_command->line = state_arg->current_line;
+
     new_command->command = NULL;
     new_command->argc = 0;
     new_command->argv = NULL;
@@ -278,21 +294,19 @@ int parse_commands(const struct dc_posix_env *env, struct dc_error *err,
 int execute_commands(const struct dc_posix_env *env, struct dc_error *err,
                      void *arg) {
     struct state *state_arg;
-
     state_arg = (struct state *) arg;
-
 
     if (dc_strstr(env, state_arg->command->command, "cd") != NULL) {
         builtin_cd(env, err, state_arg->command, state_arg->stderr);
     } else if (dc_strstr(env, state_arg->command->command, "exit") != NULL) {
         return EXIT;
     } else {
-//        execute(env, err, state_arg->command, state_arg->path);
-//
-//        if (dc_error_has_error(err))
-//        {
-//            state_arg->fatal_error = true;
-//        }
+        execute(env, err, state_arg->command, state_arg->path);
+
+        if (dc_error_has_error(err))
+        {
+            state_arg->fatal_error = true;
+        }
     }
 
     fprintf(state_arg->stdout, "%d\n", state_arg->command->exit_code);

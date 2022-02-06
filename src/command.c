@@ -50,7 +50,6 @@ void parse_command(const struct dc_posix_env *env, struct dc_error *err,
         if (dc_strstr(env, str, "~") != NULL) {
             wordexp_t exp;
             dc_wordexp(env, err, str, &exp, 0);
-            printf("we_wordv[0] at err: %s\n", exp.we_wordv[0]);
             command->stderr_file = dc_strdup(env, err, exp.we_wordv[0]);
 
             wordfree(&exp);

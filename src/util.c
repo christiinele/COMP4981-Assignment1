@@ -81,6 +81,7 @@ char **parse_path(const struct dc_posix_env *env, struct dc_error *err,
 
     list[i] = NULL;
     free(str);
+
     return list;
 }
 
