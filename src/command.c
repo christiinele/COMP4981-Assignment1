@@ -5,7 +5,6 @@
 #include <dc_util/strings.h>
 #include "command.h"
 
-// 126 tests
 
 char *trim_string_left_arrow(const struct dc_posix_env *env, char *str);
 

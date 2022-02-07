@@ -142,15 +142,6 @@ int destroy_state(const struct dc_posix_env *env, struct dc_error *err,
                 dc_free(env, command->argv[i], strlen(command->argv[i]));
             }
         }
-//        if (command->argc > 0) {
-//            dc_free(env, command->argv, command->argc);
-//        }
-//        if (command->argv != NULL) {
-//            for (int i = 0; command->argv[i]; ++i) {
-//                dc_free(env, command->argv[i], strlen(command->argv[i]));
-//            }
-//            dc_free(env, command->argv, command->argc);
-//        }
 
         if (command->stdin_file != NULL){
             dc_free(env, command->stdin_file, strlen(command->stdin_file));
@@ -176,10 +167,6 @@ int destroy_state(const struct dc_posix_env *env, struct dc_error *err,
     state_arg->path = NULL;
 
 
-
-//    state_arg->stdin = stdin;
-//    state_arg->stderr = stderr;
-//    state_arg->stdout = stdout;
 
 
 
@@ -275,14 +262,12 @@ int read_commands(const struct dc_posix_env *env, struct dc_error *err,
     state_arg->current_line = dc_strdup(env, err, line);
 
     if (dc_strlen(env, line) == 0) {
-//        dc_free(env, line, strlen(line));
         return RESET_STATE;
     }
 
     state_arg->current_line_length = dc_strlen(env, line);
-//    dc_free(env, line, strlen(line));
 
-    dc_free(err, line, line_length_of_prompt);
+    dc_free(env, line, line_length_of_prompt);
     return SEPARATE_COMMANDS;
 }
 

@@ -2,7 +2,6 @@
 #include "input.h"
 #include <dc_posix/dc_stdio.h>
 #include <dc_posix/dc_string.h>
-//#include <string.h>
 
 /**
  * Read the command line from the user.

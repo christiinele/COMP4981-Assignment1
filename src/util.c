@@ -127,11 +127,6 @@ void do_reset_state(const struct dc_posix_env *env, struct dc_error *err, struct
         dc_free(env, state->current_line, strlen(state->current_line));
         state->current_line = NULL;
     }
-//    if (command != NULL) {
-//
-//        dc_free(env, command, sizeof(&state->command));
-//        state->command = NULL;
-//    }
 
     if (command != NULL) {
         if (command->line != NULL){
@@ -193,16 +188,6 @@ void do_reset_state(const struct dc_posix_env *env, struct dc_error *err, struct
     err->line_number = 0;
     err->type = 0;
     err->err_code = 0;
-
-
-
-//    err->err_code = 0;
-//    err->type = 0;
-//    err->line_number = 0;
-//    err->file_name = NULL;
-//    err->function_name = NULL;
-
-
 
 
 }

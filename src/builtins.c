@@ -23,7 +23,6 @@ void builtin_cd(const struct dc_posix_env *env, struct dc_error *err,
     char *path;
     char *string;
     char *message;
-    int chdir_status;
     size_t total_length_message;
 
 
@@ -38,7 +37,7 @@ void builtin_cd(const struct dc_posix_env *env, struct dc_error *err,
     }
 
 
-    chdir_status = dc_chdir(env, err, path);
+    dc_chdir(env, err, path);
 
     if (dc_error_has_error(err)) {
 
@@ -56,7 +55,6 @@ void builtin_cd(const struct dc_posix_env *env, struct dc_error *err,
         total_length_message = strlen(path) + strlen(message) + 2;
         string = dc_malloc(env, err, total_length_message + 1);
         sprintf(string, "%s: %s", path, message);
-//        string[total_length_message] = '\0';
 
         fprintf(errstream, "%s\n", string);
         command->exit_code = 1;
